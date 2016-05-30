@@ -304,10 +304,13 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
                 p1.netPoint['won']++;
             }
         }
-        if (point['pointServer'] === 'P2' && point['pointsP1'] === 'Adv.') {
-            p1.breakPoint['all']++;
-            if (point['pointWin'] === 'P1') {
-                p1.breakPoint['won']++;
+        // break point judgement
+        if (point['pointServer'] === 'P2') {
+            if (point['pointsP1'] === 'Adv.' || (point['pointsP1'] === '40' && parseInt(point['pointsP2']) <= 30) ) {
+                p1.breakPoint['all']++;
+                if (point['pointWin'] === 'P1') {
+                    p1.breakPoint['won']++;
+                }
             }
         }
         if (point['pointWin'] === 'P1') {
@@ -351,14 +354,24 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
                 p2.netPoint['won']++;
             }
         }
-        if (point['pointServer'] === 'P1' && point['pointsP2'] === 'Adv.') {
-            p2.breakPoint['all']++;
-            if (point['pointWin'] === 'P2') {
-                p2.breakPoint['won']++;
+        // break point judgement
+        if (point['pointServer'] === 'P1') {
+            if (point['pointsP2'] === 'Adv.' || (point['pointsP2'] === '40' && parseInt(point['pointsP1']) <= 30) ) {
+                p2.breakPoint['all']++;
+                if (point['pointWin'] === 'P2') {
+                    p2.breakPoint['won']++;
+                }
             }
         }
         if (point['pointWin'] === 'P2') {
             p2.total++;
+        }
+
+        if (point['pointServer'] === 'P2' && point['pointsP1'] === 'Adv.') {
+            p1.breakPoint['all']++;
+            if (point['pointWin'] === 'P1') {
+                p1.breakPoint['won']++;
+            }
         }
     }
 
