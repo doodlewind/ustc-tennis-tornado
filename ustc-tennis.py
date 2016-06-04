@@ -8,6 +8,7 @@ import motor
 import os
 import json
 from bson import ObjectId
+import dateutil.parser
 
 enable_pretty_logging()
 
@@ -17,6 +18,32 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(o, ObjectId):
             return str(o)
         return json.JSONEncoder.default(self, o)
+
+
+class FeedHandler(web.RequestHandler):
+
+    @gen.coroutine
+    def get(self):
+        resp_data = []
+        cursor = db.match_details.find()
+        cursor.sort([('started', -1)])
+        for document in (yield cursor.to_list(length=999)):
+            feed = dict()
+            feed["p1"] = document["p1_name"]
+            feed["p2"] = document["p2_name"]
+            feed["setsP1"] = document["sets_p1"]
+            feed["setsP2"] = document["sets_p2"]
+            feed["title"] = document["title"]
+            feed["date"] = str(document["started"])
+            resp_data.append(feed)
+            print feed
+        self.write(JSONEncoder().encode(resp_data))
+        self.finish()
+
+    @gen.coroutine
+    def post(self):
+        self.write('')
+        self.finish()
 
 
 class UploadHandler(web.RequestHandler):
@@ -74,20 +101,26 @@ class UploadHandler(web.RequestHandler):
 
             yield db.match_details.save({
                 "title": match_title,
+                "started": dateutil.parser.parse(match["stat"]["started"]),
+                "ended": dateutil.parser.parse(match["stat"]["ended"]),
                 "detail": match["progress"],
                 "p1_name": match["stat"]["player1"],
                 "p2_name": match["stat"]["player2"],
                 "p1_stat": match["p1"],
                 "p2_stat": match["p2"],
-                "setsP1": match["stat"]["endSetsP1"],
-                "setsP2": match["stat"]["endSetsP2"]
+                "sets_p1": match["stat"]["endSetsP1"],
+                "sets_p2": match["stat"]["endSetsP2"]
             })
 
-            p1 = yield db.players.find_one({"name":  match["p1"]})
+            p1 = yield db.players.find_one({"name":  match["stat"]["player1"]})
+            if p1 is not None:
+                yield db.players.remove(p1)
             p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"])
             yield db.players.save(p1)
 
-            p2 = yield db.players.find_one({"name":  match["p2"]})
+            p2 = yield db.players.find_one({"name":  match["stat"]["player2"]})
+            if p2 is not None:
+                yield db.players.remove(p2)
             p2 = self.update_player_stat(p2, match["stat"]["player2"], match["p2"])
             yield db.players.save(p2)
 
@@ -102,6 +135,7 @@ class UploadHandler(web.RequestHandler):
 
 def make_app(path):
     return web.Application([
+        (r"/feed", FeedHandler),
         (r"/upload", UploadHandler),
         (r"/", web.RedirectHandler, {'url': 'index.html'}),
         (r"/(.*)", StaticFileHandler, {'path': path}),

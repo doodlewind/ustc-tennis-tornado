@@ -20,6 +20,11 @@ ustcTennis.config(function($stateProvider, $urlRouterProvider) {
             controller: 'ResultCtrl',
             templateUrl: 'result.html'
         })
+        .state('feed', {
+            url: '/feed',
+            controller: 'FeedCtrl',
+            templateUrl: 'feed.html'
+        })
         .state('help', {
             url: '/help',
             templateUrl: 'help.html'
@@ -43,7 +48,9 @@ ustcTennis.service('matchService', function() {
                 title: 'Demo Match',
                 sets: 6,
                 server: 'P1',
-                advantage: true
+                advantage: true,
+                started: new Date('2016-05-20T15:00:00'),
+                ended: new Date('2011-05-20T15:45:00')
             }
         }
         return match;
@@ -86,6 +93,7 @@ ustcTennis.controller('ConfigCtrl', function($scope, matchService) {
 
 ustcTennis.controller('ScoringCtrl', function($scope, matchService, progressService, $location) {
     $scope.match = matchService.getMatch();
+    $scope.match.started = new Date();
 
     // record all points in this match
     $scope.progress = [];
@@ -133,6 +141,7 @@ ustcTennis.controller('ScoringCtrl', function($scope, matchService, progressServ
     var endMatch = function(winner) {
         progressService.addProgress($scope.progress);
         $location.path('result');
+        $scope.match.ended = new Date();
         alert("End of Match, Winner is " + winner + "!");
     };
 
@@ -385,4 +394,22 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
     $scope.p1 = p1;
     $scope.p2 = p2;
 
+});
+
+ustcTennis.controller('FeedCtrl', function($scope, $http) {
+     var fetchFeed = function() {
+        $http.get('/feed').then(function(res) {
+            $scope.feeds= res.data;
+
+        } , function() {
+            console.log('err');
+        });
+    };
+    fetchFeed();
+});
+
+ustcTennis.filter('feedDate', function($filter) {
+    return function(input) {
+        return input.split(' ')[0];
+    };
 });

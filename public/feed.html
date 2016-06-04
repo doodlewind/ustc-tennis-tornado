@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col-xs-12 col-sm-6 col-sm-offset-3" ng-repeat="feed in feeds">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="col-xs-4 text-center">
+                    <h3>{{feed.p1}}</h3>
+                </div>
+                <div class="col-xs-4 text-center">
+                    <h3><span class="text-primary">{{feed.setsP1}}</span> - <span class="text-primary">{{feed.setsP2}}</span> </h3>
+                </div>
+                <div class="col-xs-4 text-center">
+                    <h3>{{feed.p2}}</h3>
+                </div>
+                <div class="col-xs-12 text-center">
+                    <h4><small>
+                        {{feed.title}} &nbsp;&nbsp;&nbsp; {{feed.date | feedDate}}
+                    </small></h4>
+                </div>
+                <div class="col-xs-12 text-right">
+                    <a class="btn btn-primary">More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
