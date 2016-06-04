@@ -244,12 +244,14 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
     $scope.progress = progressService.getProgress();
 
     $scope.upload = function() {
-        $http.post("upload", {
+        var data = {
             'progress': $scope.progress,
             'stat': $scope.match,
             'p1': $scope.p1,
             'p2': $scope.p2
-        });
+        };
+        $http.post("upload", data);
+        console.log(data);
     };
 
     var progressLen = $scope.progress.length;

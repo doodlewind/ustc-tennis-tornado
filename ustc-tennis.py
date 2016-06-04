@@ -21,10 +21,76 @@ class JSONEncoder(json.JSONEncoder):
 
 class UploadHandler(web.RequestHandler):
 
+    @staticmethod
+    def update_player_stat(player, player_name, stat):
+        if player is None:
+            player = dict()
+            player["name"] = player_name
+            player["first_serve_in"] = int(stat["firstServeIn"])
+            player["first_serve_all"] = int(stat["firstServeAll"])
+            player["first_serve_won"] = int(stat["firstServeWon"])
+            player["second_serve_won"] = int(stat["secondServeWon"])
+            player["second_serve_all"] = int(stat["secondServeAll"])
+            player["ace"] = int(stat["ace"])
+            player["double_fault"] = int(stat["doubleFault"])
+            player["winner"] = dict()
+            player["winner"]["F"] = int(stat["winner"]["F"])
+            player["winner"]["B"] = int(stat["winner"]["B"])
+            player["unforced_err"] = dict()
+            player["unforced_err"]["F"] = int(stat["unforcedErr"]["F"])
+            player["unforced_err"]["B"] = int(stat["unforcedErr"]["B"])
+            player["net_point"] = dict()
+            player["net_point"]["won"] = int(stat["netPoint"]["won"])
+            player["net_point"]["all"] = int(stat["netPoint"]["all"])
+            player["break_point"] = dict()
+            player["break_point"]["won"] = int(stat["breakPoint"]["won"])
+            player["break_point"]["all"] = int(stat["breakPoint"]["all"])
+            player["total"] = int(stat["total"])
+        else:
+            player["first_serve_in"] += int(stat["firstServeIn"])
+            player["first_serve_all"] += int(stat["firstServeAll"])
+            player["first_serve_won"] += int(stat["firstServeWon"])
+            player["second_serve_won"] += int(stat["secondServeWon"])
+            player["second_serve_all"] += int(stat["secondServeAll"])
+            player["ace"] += int(stat["ace"])
+            player["double_fault"] += int(stat["doubleFault"])
+            player["winner"]["F"] += int(stat["winner"]["F"])
+            player["winner"]["B"] += int(stat["winner"]["B"])
+            player["unforced_err"]["F"] += int(stat["unforcedErr"]["F"])
+            player["unforced_err"]["B"] += int(stat["unforcedErr"]["B"])
+            player["net_point"]["won"] += int(stat["netPoint"]["won"])
+            player["net_point"]["all"] += int(stat["netPoint"]["all"])
+            player["break_point"]["won"] += int(stat["breakPoint"]["won"])
+            player["break_point"]["all"] += int(stat["breakPoint"]["all"])
+            player["total"] += int(stat["total"])
+
+        return player
+
     @gen.coroutine
     def post(self):
-        match_stat = json.loads(self.request.body)
-        print match_stat
+        match = json.loads(self.request.body)
+        if match["stat"]["title"] is not None:
+            match_title = match["stat"]["title"]
+
+            yield db.match_details.save({
+                "title": match_title,
+                "detail": match["progress"],
+                "p1_name": match["stat"]["player1"],
+                "p2_name": match["stat"]["player2"],
+                "p1_stat": match["p1"],
+                "p2_stat": match["p2"],
+                "setsP1": match["stat"]["endSetsP1"],
+                "setsP2": match["stat"]["endSetsP2"]
+            })
+
+            p1 = yield db.players.find_one({"name":  match["p1"]})
+            p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"])
+            yield db.players.save(p1)
+
+            p2 = yield db.players.find_one({"name":  match["p2"]})
+            p2 = self.update_player_stat(p2, match["stat"]["player2"], match["p2"])
+            yield db.players.save(p2)
+
         self.write('')
         self.finish()
 
@@ -46,7 +112,7 @@ if __name__ == "__main__":
 
     static_path = os.path.dirname(os.path.realpath(__file__)) + '/public'
     ip = '127.0.0.1'
-    port = 7000
+    port = 8979
 
     dbclient = motor.MotorClient(ip, 27017)
     db = dbclient.ustcTennis
