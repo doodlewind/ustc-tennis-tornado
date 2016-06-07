@@ -32,11 +32,11 @@
         </div>
 
         <div class="collapse navbar-collapse" id="ustc-tennis-nav-collapse">
-            <form class="navbar-form navbar-left" role="search">
+            <form ng-controller="SearchCtrl" class="navbar-form navbar-left" role="search">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Player Name">
+                    <input type="text" class="form-control" ng-model="name" placeholder="Player Name">
                 </div>
-                <button disabled type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+                <button ng-click="search()" type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
             </form>
             <ul class="nav navbar-nav navbar-right">
                 <li><a ui-sref="config"><span class="glyphicon glyphicon-list-alt"></span> Recorder</a></li>

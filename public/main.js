@@ -30,6 +30,11 @@ ustcTennis.config(function($stateProvider, $urlRouterProvider) {
             controller: 'MatchCtrl',
             templateUrl: 'view/match.html'
         })
+        .state('player', {
+            url: '/player/:name',
+            controller: 'PlayerCtrl',
+            templateUrl: 'view/player.html'
+        })
         .state('help', {
             url: '/help',
             templateUrl: 'view/help.html'
@@ -265,7 +270,7 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
             'p2': $scope.p2
         };
         $http.post("upload", data);
-        console.log(data);
+        // console.log(data);
     };
 
     var progressLen = $scope.progress.length;
@@ -426,16 +431,35 @@ ustcTennis.controller('FeedCtrl', function($scope, $http) {
 
 ustcTennis.controller('MatchCtrl', function($scope, $stateParams, $http) {
     $scope.id = $stateParams.id;
-    console.log('match');
-    $http.get('match?id=' + $scope.id).then(
+    $http.get('/match?id=' + $scope.id).then(
             function(res) {
                 $scope.match = res.data;
                 $scope.p1 = res.data["p1_stat"];
                 $scope.p2 = res.data["p2_stat"];
-                console.log(res.data);
+                // console.log(res.data);
             }, function() {
                 console.log('err');
             });
+});
+
+ustcTennis.controller('PlayerCtrl', function($scope, $stateParams, $http) {
+    $scope.name = $stateParams.name;
+    $scope.hasPlayer = function() {
+        return ($scope.player != undefined) && ($scope.player.name != undefined);
+    };
+
+    $http.get('/player?name=' + $scope.name).then(
+        function(res) {
+            $scope.player = res.data;
+        }, function() {
+            console.log('err');
+        });
+});
+
+ustcTennis.controller('SearchCtrl', function($scope, $location) {
+    $scope.search = function() {
+        $location.path('player/' + $scope.name);
+    };
 });
 
 ustcTennis.filter('feedDate', function() {

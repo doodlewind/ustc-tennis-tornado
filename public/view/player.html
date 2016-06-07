@@ -1,0 +1,51 @@
+<div class="row">
+    <div class="col-xs-12 col-sm-offset-3 col-sm-6" ng-show="hasPlayer()">
+        <div class="panel panel-default">
+            <div class="panel-body table-responsive">
+                <h3>{{player.name}}</h3>
+                <table class="table table-striped">
+                    <tr>
+                        <td>Match</td>
+                        <td>{{player.match.won}} Won / {{player.match.all}} All</td>
+                    </tr>
+                    <tr>
+                        <td>ACE</td>
+                        <td>{{player.ace}}</td>
+                    </tr>
+                    <tr>
+                        <td>1st Serve</td>
+                        <td>{{player.first_serve_in}} In / {{player.first_serve_all}} All</td>
+                    </tr>
+                    <tr>
+                        <td>2nd Serve</td>
+                         <td>{{player.second_serve_won}} Won / {{player.second_serve_all}} All</td>
+                    </tr>
+                    <tr>
+                        <td>Break Points</td>
+                        <td>{{player.break_point.won}} Won / {{player.break_point.all}} All</td>
+                    </tr>
+                    <tr>
+                        <td>Winners</td>
+                        <td>{{player.winner.F}} Forehand / {{player.winner.B}} Backhand</td>
+                    </tr>
+                    <tr>
+                        <td>Unforced Errors</td>
+                        <td>{{player.unforced_err.F}} Forehand / {{player.unforced_err.B}} Backhand</td>
+                    </tr>
+                    <tr>
+                        <td>Net Points</td>
+                        <td>{{player.net_point.won}} Won / {{player.net_point.all}} All</td>
+                    </tr>
+                    <tr>
+                        <td>Double Faults</td>
+                        <td>{{player.double_fault}}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Points</td>
+                        <td>{{player.total}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

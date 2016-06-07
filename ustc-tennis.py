@@ -55,7 +55,7 @@ class FeedHandler(web.RequestHandler):
 class UploadHandler(web.RequestHandler):
 
     @staticmethod
-    def update_player_stat(player, player_name, stat):
+    def update_player_stat(player, player_name, stat, is_winner):
         if player is None:
             player = dict()
             player["name"] = player_name
@@ -79,6 +79,13 @@ class UploadHandler(web.RequestHandler):
             player["break_point"]["won"] = int(stat["breakPoint"]["won"])
             player["break_point"]["all"] = int(stat["breakPoint"]["all"])
             player["total"] = int(stat["total"])
+            player["match"] = dict()
+            player["match"]["all"] = 1
+            if is_winner:
+                player["match"]["won"] = 1
+            else:
+                player["match"]["won"] = 0
+
         else:
             player["first_serve_in"] += int(stat["firstServeIn"])
             player["first_serve_all"] += int(stat["firstServeAll"])
@@ -96,6 +103,9 @@ class UploadHandler(web.RequestHandler):
             player["break_point"]["won"] += int(stat["breakPoint"]["won"])
             player["break_point"]["all"] += int(stat["breakPoint"]["all"])
             player["total"] += int(stat["total"])
+            player["match"]["all"] += 1
+            if is_winner:
+                player["match"]["won"] += 1
 
         return player
 
@@ -118,16 +128,21 @@ class UploadHandler(web.RequestHandler):
                 "sets_p2": match["stat"]["endSetsP2"]
             })
 
+            if int(match["stat"]["endSetsP1"]) > int(match["stat"]["endSetsP2"]):
+                p1_is_winner = True
+            else:
+                p1_is_winner = False
+
             p1 = yield db.players.find_one({"name":  match["stat"]["player1"]})
             if p1 is not None:
                 yield db.players.remove(p1)
-            p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"])
+            p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"], p1_is_winner)
             yield db.players.save(p1)
 
             p2 = yield db.players.find_one({"name":  match["stat"]["player2"]})
             if p2 is not None:
                 yield db.players.remove(p2)
-            p2 = self.update_player_stat(p2, match["stat"]["player2"], match["p2"])
+            p2 = self.update_player_stat(p2, match["stat"]["player2"], match["p2"], not p1_is_winner)
             yield db.players.save(p2)
 
         self.write('')
@@ -155,11 +170,27 @@ class MatchHandler(web.RequestHandler):
         self.finish()
 
 
+class PlayerHandler(web.RequestHandler):
+
+    @gen.coroutine
+    def post(self):
+        self.write('')
+        self.finish()
+
+    @gen.coroutine
+    def get(self):
+        name = str(self.get_argument('name', default=''))
+        player = yield db.players.find_one({"name": name})
+
+        self.write(JSONEncoder().encode(player))
+        self.finish()
+
 
 def make_app(path):
     return web.Application([
         (r"/feed", FeedHandler),
         (r"/upload", UploadHandler),
+        (r"/player", PlayerHandler),
         (r"/match", MatchHandler),
         (r"/", web.RedirectHandler, {'url': 'index.html'}),
         (r"/(.*)", StaticFileHandler, {'path': path}),
