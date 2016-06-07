@@ -3,31 +3,36 @@
 var ustcTennis = angular.module('ustc.tennis', ['ui.router', 'ui.bootstrap']);
 
 ustcTennis.config(function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.otherwise('config');
+    $urlRouterProvider.otherwise('feed');
     $stateProvider
         .state('config', {
             url: '/config',
             controller: 'ConfigCtrl',
-            templateUrl: 'config.html'
+            templateUrl: 'view/config.html'
         })
         .state('scoring', {
             url: '/scoring',
             controller: 'ScoringCtrl',
-            templateUrl: 'scoring.html'
+            templateUrl: 'view/scoring.html'
         })
         .state('result', {
             url: '/result',
             controller: 'ResultCtrl',
-            templateUrl: 'result.html'
+            templateUrl: 'view/result.html'
         })
         .state('feed', {
             url: '/feed',
             controller: 'FeedCtrl',
-            templateUrl: 'feed.html'
+            templateUrl: 'view/feed.html'
+        })
+        .state('match', {
+            url: '/match',
+            controller: 'MatchCtrl',
+            templateUrl: 'view/match.html'
         })
         .state('help', {
             url: '/help',
-            templateUrl: 'help.html'
+            templateUrl: 'view/help.html'
         });
 });
 
@@ -43,9 +48,9 @@ ustcTennis.service('matchService', function() {
         // generate default match info
         if (Object.keys(match).length === 0) {
             match = {
-                player1: 'Player 1',
-                player2: 'Player 2',
-                title: 'Demo Match',
+                player1: 'P-1',
+                player2: 'P-2',
+                title: 'Test Match',
                 sets: 6,
                 server: 'P1',
                 advantage: true,
@@ -397,18 +402,33 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
 });
 
 ustcTennis.controller('FeedCtrl', function($scope, $http) {
-     var fetchFeed = function() {
-        $http.get('/feed').then(function(res) {
-            $scope.feeds= res.data;
-
-        } , function() {
-            console.log('err');
-        });
+    $scope.currentPage = 1;
+    $scope.maxSize = 3;
+    $scope.totalItems = 500;
+    var loadFeed = function () {
+        var size = 3;
+        var queryStr = '/feed?begin=' + ($scope.currentPage - 1) * size + '&size=' + size;
+        $http.get(queryStr).then(
+            function(res) {
+                $scope.feeds = res.data;
+            }, function() {
+                console.log('err');
+            });
     };
-    fetchFeed();
+    loadFeed();
+    $scope.$watch('currentPage', function() {
+        loadFeed();
+        if ($scope.feeds && $scope.feeds.length <= 1) {
+            $scope.currentPage = 1;
+        }
+    });
 });
 
-ustcTennis.filter('feedDate', function($filter) {
+ustcTennis.controller('MatchCtrl', function($scope) {
+    console.log('match');
+});
+
+ustcTennis.filter('feedDate', function() {
     return function(input) {
         return input.split(' ')[0];
     };

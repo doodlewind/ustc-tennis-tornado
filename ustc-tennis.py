@@ -24,10 +24,12 @@ class FeedHandler(web.RequestHandler):
 
     @gen.coroutine
     def get(self):
-        resp_data = []
-        cursor = db.match_details.find()
-        cursor.sort([('started', -1)])
-        for document in (yield cursor.to_list(length=999)):
+        begin = int(self.get_argument('begin', default=0))
+        size = int(self.get_argument('size', default=1))
+
+        match_feeds = []
+        cursor = db.match_details.find({}).sort([('started', -1)]).skip(begin)
+        for document in (yield cursor.to_list(length=size)):
             feed = dict()
             feed["p1"] = document["p1_name"]
             feed["p2"] = document["p2_name"]
@@ -35,9 +37,9 @@ class FeedHandler(web.RequestHandler):
             feed["setsP2"] = document["sets_p2"]
             feed["title"] = document["title"]
             feed["date"] = str(document["started"])
-            resp_data.append(feed)
+            match_feeds.append(feed)
             print feed
-        self.write(JSONEncoder().encode(resp_data))
+        self.write(JSONEncoder().encode(match_feeds))
         self.finish()
 
     @gen.coroutine
