@@ -1,1 +1,15 @@
-rank
+<div class="row">
+    <div class="col-xs-12 col-sm-offset-3 col-sm-6">
+         <div class="panel panel-default">
+             <div class="panel-body table-responsive">
+                 <h3 class="text-center">Leaderboard</h3>
+                 <table class="table table-striped">
+                     <tr ng-repeat="player in players">
+                         <td>{{player.name}}</td>
+                         <td>{{player.rank}}</td>
+                     </tr>
+                 </table>
+             </div>
+         </div>
+    </div>
+</div>

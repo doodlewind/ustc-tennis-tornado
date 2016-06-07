@@ -214,12 +214,31 @@ class PlayerHandler(web.RequestHandler):
         self.finish()
 
 
+class RankHandler(web.RequestHandler):
+
+    @gen.coroutine
+    def post(self):
+        self.write('')
+        self.finish()
+
+    @gen.coroutine
+    def get(self):
+        resp_data = []
+        cursor = db.players.find({}).sort([('rank', -1)])
+        for document in (yield cursor.to_list(length=500)):
+            resp_data.append(document)
+
+        self.write(JSONEncoder().encode(resp_data))
+        self.finish()
+
+
 def make_app(path):
     return web.Application([
         (r"/feed", FeedHandler),
         (r"/upload", UploadHandler),
         (r"/player", PlayerHandler),
         (r"/match", MatchHandler),
+        (r"/rank", RankHandler),
         (r"/", web.RedirectHandler, {'url': 'index.html'}),
         (r"/(.*)", StaticFileHandler, {'path': path}),
     ], db=db)

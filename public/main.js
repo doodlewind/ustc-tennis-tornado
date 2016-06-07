@@ -35,6 +35,11 @@ ustcTennis.config(function($stateProvider, $urlRouterProvider) {
             controller: 'PlayerCtrl',
             templateUrl: 'view/player.html'
         })
+        .state('rank', {
+            url: '/rank',
+            controller: 'RankCtrl',
+            templateUrl: 'view/rank.html'
+        })
         .state('help', {
             url: '/help',
             templateUrl: 'view/help.html'
@@ -444,6 +449,8 @@ ustcTennis.controller('MatchCtrl', function($scope, $stateParams, $http) {
 
 ustcTennis.controller('PlayerCtrl', function($scope, $stateParams, $http) {
     $scope.name = $stateParams.name;
+
+    // hide table if no player is found
     $scope.hasPlayer = function() {
         return ($scope.player != undefined) && ($scope.player.name != undefined);
     };
@@ -460,6 +467,16 @@ ustcTennis.controller('SearchCtrl', function($scope, $location) {
     $scope.search = function() {
         $location.path('player/' + $scope.name);
     };
+});
+
+ustcTennis.controller('RankCtrl', function($scope, $http) {
+    $scope.players = [];
+    $http.get('/rank').then(
+        function(res) {
+            $scope.players = res.data;
+        }, function() {
+            console.log('err');
+        });
 });
 
 ustcTennis.filter('feedDate', function() {
