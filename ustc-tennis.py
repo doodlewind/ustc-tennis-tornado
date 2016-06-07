@@ -43,6 +43,7 @@ class FeedHandler(web.RequestHandler):
             feed["date"] = str(document["started"])
             match_feeds.append(feed)
             print feed
+        self.set_header("Access-Control-Allow-Origin", '*')
         self.write(JSONEncoder().encode(match_feeds))
         self.finish()
 
@@ -173,6 +174,7 @@ class UploadHandler(web.RequestHandler):
             yield db.players.save(p1)
             yield db.players.save(p2)
 
+        self.set_header("Access-Control-Allow-Origin", '*')
         self.write('')
         self.finish()
 
@@ -194,6 +196,7 @@ class MatchHandler(web.RequestHandler):
         match_id = str(self.get_argument('id', default=''))
         match = yield db.match_details.find_one({"_id": ObjectId(match_id)})
 
+        self.set_header("Access-Control-Allow-Origin", '*')
         self.write(JSONEncoder().encode(match))
         self.finish()
 
@@ -210,6 +213,7 @@ class PlayerHandler(web.RequestHandler):
         name = str(self.get_argument('name', default=''))
         player = yield db.players.find_one({"name": name})
 
+        self.set_header("Access-Control-Allow-Origin", '*')
         self.write(JSONEncoder().encode(player))
         self.finish()
 
@@ -228,6 +232,7 @@ class RankHandler(web.RequestHandler):
         for document in (yield cursor.to_list(length=500)):
             resp_data.append(document)
 
+        self.set_header("Access-Control-Allow-Origin", '*')
         self.write(JSONEncoder().encode(resp_data))
         self.finish()
 
