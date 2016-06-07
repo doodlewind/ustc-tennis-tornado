@@ -55,6 +55,26 @@ class FeedHandler(web.RequestHandler):
 class UploadHandler(web.RequestHandler):
 
     @staticmethod
+    def elo_play_rank(r_a, r_b, a_is_winner):
+        print "r_a", r_a, "r_b", r_b
+        k = 16
+        if a_is_winner:
+            s_a = 1
+            s_b = 0
+        else:
+            s_a = 0
+            s_b = 1
+
+        e_a = 1 / (1 + pow(10, (r_b - r_a) / 400))
+        e_b = 1 / (1 + pow(10, (r_a - r_b) / 400))
+
+        r_a_ = r_a + k * (s_a - e_a)
+        r_b_ = r_b + k * (s_b - e_b)
+
+        print "r_a_", r_a_, "r_b_", r_b_
+        return [int(r_a_), int(r_b_)]
+
+    @staticmethod
     def update_player_stat(player, player_name, stat, is_winner):
         if player is None:
             player = dict()
@@ -135,14 +155,22 @@ class UploadHandler(web.RequestHandler):
 
             p1 = yield db.players.find_one({"name":  match["stat"]["player1"]})
             if p1 is not None:
+                p1_old_rank = p1["rank"]
                 yield db.players.remove(p1)
-            p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"], p1_is_winner)
-            yield db.players.save(p1)
+            else:
+                p1_old_rank = 0
 
             p2 = yield db.players.find_one({"name":  match["stat"]["player2"]})
             if p2 is not None:
+                p2_old_rank = p2["rank"]
                 yield db.players.remove(p2)
+            else:
+                p2_old_rank = 0
+
+            p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"], p1_is_winner)
             p2 = self.update_player_stat(p2, match["stat"]["player2"], match["p2"], not p1_is_winner)
+            p1["rank"], p2["rank"] = self.elo_play_rank(p1_old_rank, p2_old_rank, p1_is_winner)
+            yield db.players.save(p1)
             yield db.players.save(p2)
 
         self.write('')
