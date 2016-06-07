@@ -26,7 +26,7 @@ ustcTennis.config(function($stateProvider, $urlRouterProvider) {
             templateUrl: 'view/feed.html'
         })
         .state('match', {
-            url: '/match',
+            url: '/match/:id',
             controller: 'MatchCtrl',
             templateUrl: 'view/match.html'
         })
@@ -424,8 +424,18 @@ ustcTennis.controller('FeedCtrl', function($scope, $http) {
     });
 });
 
-ustcTennis.controller('MatchCtrl', function($scope) {
+ustcTennis.controller('MatchCtrl', function($scope, $stateParams, $http) {
+    $scope.id = $stateParams.id;
     console.log('match');
+    $http.get('match?id=' + $scope.id).then(
+            function(res) {
+                $scope.match = res.data;
+                $scope.p1 = res.data["p1_stat"];
+                $scope.p2 = res.data["p2_stat"];
+                console.log(res.data);
+            }, function() {
+                console.log('err');
+            });
 });
 
 ustcTennis.filter('feedDate', function() {

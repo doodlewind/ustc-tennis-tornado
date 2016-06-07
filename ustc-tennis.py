@@ -8,6 +8,7 @@ import motor
 import os
 import json
 from bson import ObjectId
+from datetime import datetime
 import dateutil.parser
 
 enable_pretty_logging()
@@ -16,6 +17,8 @@ enable_pretty_logging()
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime):
             return str(o)
         return json.JSONEncoder.default(self, o)
 
@@ -31,6 +34,7 @@ class FeedHandler(web.RequestHandler):
         cursor = db.match_details.find({}).sort([('started', -1)]).skip(begin)
         for document in (yield cursor.to_list(length=size)):
             feed = dict()
+            feed["id"] = str(document["_id"])
             feed["p1"] = document["p1_name"]
             feed["p2"] = document["p2_name"]
             feed["setsP1"] = document["sets_p1"]
@@ -135,10 +139,28 @@ class UploadHandler(web.RequestHandler):
         self.finish()
 
 
+class MatchHandler(web.RequestHandler):
+
+    @gen.coroutine
+    def post(self):
+        self.write('')
+        self.finish()
+
+    @gen.coroutine
+    def get(self):
+        match_id = str(self.get_argument('id', default=''))
+        match = yield db.match_details.find_one({"_id": ObjectId(match_id)})
+
+        self.write(JSONEncoder().encode(match))
+        self.finish()
+
+
+
 def make_app(path):
     return web.Application([
         (r"/feed", FeedHandler),
         (r"/upload", UploadHandler),
+        (r"/match", MatchHandler),
         (r"/", web.RedirectHandler, {'url': 'index.html'}),
         (r"/(.*)", StaticFileHandler, {'path': path}),
     ], db=db)
