@@ -102,6 +102,7 @@ class UploadHandler(web.RequestHandler):
             player["total"] = int(stat["total"])
             player["match"] = dict()
             player["match"]["all"] = 1
+            player["best_rank"] = 0
             if is_winner:
                 player["match"]["won"] = 1
             else:
@@ -171,6 +172,12 @@ class UploadHandler(web.RequestHandler):
             p1 = self.update_player_stat(p1, match["stat"]["player1"], match["p1"], p1_is_winner)
             p2 = self.update_player_stat(p2, match["stat"]["player2"], match["p2"], not p1_is_winner)
             p1["rank"], p2["rank"] = self.elo_play_rank(p1_old_rank, p2_old_rank, p1_is_winner)
+
+            if p1["rank"] >= p1["best_rank"]:
+                p1["best_rank"] = p1["rank"]
+            if p2["rank"] >= p2["best_rank"]:
+                p2["best_rank"] = p2["rank"]
+
             yield db.players.save(p1)
             yield db.players.save(p2)
 
