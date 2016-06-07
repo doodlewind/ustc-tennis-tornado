@@ -25,11 +25,11 @@
         </div>
     </div>
     <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-        <uib-pagination
-                total-items="totalItems"
-                ng-model="currentPage"
-                max-size="maxSize"
-                boundary-links="false">
-        </uib-pagination>
+        <nav>
+            <ul class="pager">
+                <li class="previous" ng-click="prevFeeds()" ng-hide="currentPage <= 1"><a>Newer</a></li>
+                <li class="next" ng-click="nextFeeds()" ng-hide="!hasNext"><a>Older</a></li>
+            </ul>
+        </nav>
     </div>
 </div>

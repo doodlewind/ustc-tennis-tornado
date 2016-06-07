@@ -3,7 +3,7 @@
 var ustcTennis = angular.module('ustc.tennis', ['ui.router', 'ui.bootstrap']);
 
 ustcTennis.config(function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.otherwise('feed');
+    $urlRouterProvider.otherwise('feed/1');
     $stateProvider
         .state('config', {
             url: '/config',
@@ -21,7 +21,7 @@ ustcTennis.config(function($stateProvider, $urlRouterProvider) {
             templateUrl: 'view/result.html'
         })
         .state('feed', {
-            url: '/feed',
+            url: '/feed/:pageNum',
             controller: 'FeedCtrl',
             templateUrl: 'view/feed.html'
         })
@@ -40,10 +40,6 @@ ustcTennis.config(function($stateProvider, $urlRouterProvider) {
             controller: 'RankCtrl',
             templateUrl: 'view/rank.html'
         })
-        .state('help', {
-            url: '/help',
-            templateUrl: 'view/help.html'
-        });
 });
 
 // pass match data to scoring page
@@ -411,27 +407,34 @@ ustcTennis.controller('ResultCtrl', function($scope, matchService, progressServi
 
 });
 
-ustcTennis.controller('FeedCtrl', function($scope, $http) {
-    $scope.currentPage = 1;
-    $scope.maxSize = 3;
-    $scope.totalItems = 500;
+ustcTennis.controller('FeedCtrl', function($scope, $stateParams, $http, $state) {
+    $scope.hasNext = true;
+    $scope.currentPage = $stateParams.pageNum;
     var loadFeed = function () {
         var size = 3;
-        var queryStr = '/feed?begin=' + ($scope.currentPage - 1) * size + '&size=' + size;
+        var queryStr = '/feed?begin=' + ($stateParams.pageNum - 1) * size + '&size=' + size;
         $http.get(queryStr).then(
             function(res) {
+                if (res.data.length <= 1) {
+                    $scope.hasNext = false;
+                }
                 $scope.feeds = res.data;
             }, function() {
                 console.log('err');
             });
     };
     loadFeed();
-    $scope.$watch('currentPage', function() {
+    $scope.prevFeeds = function() {
+        var prevPage = Math.max(1, parseInt($stateParams.pageNum) - 1);
+        $state.go("feed", {pageNum: prevPage});
         loadFeed();
-        if ($scope.feeds && $scope.feeds.length <= 1) {
-            $scope.currentPage = 1;
-        }
-    });
+    };
+
+    $scope.nextFeeds = function() {
+        $state.go("feed", {pageNum: parseInt($stateParams.pageNum) + 1});
+        loadFeed();
+    };
+
 });
 
 ustcTennis.controller('MatchCtrl', function($scope, $stateParams, $http) {
